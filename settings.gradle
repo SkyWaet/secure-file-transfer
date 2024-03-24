@@ -2,4 +2,5 @@ rootProject.name = 'securefiletransfer'
 include 'chaincodes'
 include 'consumer'
 include 'common'
+include 'producer'
 

@@ -1,7 +1,7 @@
 package com.skywaet.securefiletransfer.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.skywaet.securefiletransfer.common.dto.FileMetadata;
+import com.skywaet.securefiletransfer.common.model.FileMetadata;
 import org.hyperledger.fabric.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
