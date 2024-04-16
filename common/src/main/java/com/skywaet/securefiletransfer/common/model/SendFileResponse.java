@@ -2,6 +2,7 @@ package com.skywaet.securefiletransfer.common.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.annotation.Nonnull;
 
 import java.util.Objects;
@@ -11,6 +12,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Response of fileTransfer smart contract sendFile method
  */
+@JsonPropertyOrder(alphabetic = true)
 public class SendFileResponse {
     /**
      * ID of the sent file

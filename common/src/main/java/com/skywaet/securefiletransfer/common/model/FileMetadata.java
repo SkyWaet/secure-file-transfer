@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -27,27 +26,32 @@ public final class FileMetadata {
     private final String description;
     @Nonnull
     @JsonProperty
-    private final byte @NotEmpty [] fileHash;
+    private final HashingProperties hashingProperties;
     @Nonnull
     @JsonProperty
     private final @NotBlank String sender;
+    @Nonnull
+    @JsonProperty
+    private final @NotBlank String storageType;
 
     @JsonCreator
     private FileMetadata(@Nonnull @NotBlank @JsonProperty String fileId,
                          @Nonnull @NotBlank @JsonProperty String fileName,
                          @Nullable @JsonProperty String description,
-                         @Nonnull @NotEmpty @JsonProperty byte[] fileHash,
-                         @Nonnull @NotBlank @JsonProperty String sender) {
+                         @Nonnull @JsonProperty HashingProperties hashingProperties,
+                         @Nonnull @NotBlank @JsonProperty String sender,
+                         @Nonnull String storageType) {
         this.fileId = Objects.requireNonNull(fileId);
         this.fileName = Objects.requireNonNull(fileName);
         this.description = description;
-        this.fileHash = Objects.requireNonNull(fileHash);
+        this.hashingProperties = Objects.requireNonNull(hashingProperties);
         this.sender = Objects.requireNonNull(sender);
+        this.storageType = storageType;
     }
 
     @Nonnull
     @JsonProperty
-    public @NotBlank String getFileId() {
+    public @NotBlank String fileId() {
         return fileId;
     }
 
@@ -59,20 +63,31 @@ public final class FileMetadata {
 
     @Nonnull
     @JsonProperty
-    public Optional<String> getDescription() {
+    public Optional<String> description() {
         return Optional.ofNullable(description);
     }
 
     @Nonnull
     @JsonProperty
-    public byte @NotEmpty [] fileHash() {
-        return fileHash;
+    public HashingProperties hashingProperties() {
+        return hashingProperties;
     }
 
     @Nonnull
     @JsonProperty
     public @NotBlank String sender() {
         return sender;
+    }
+
+    @Nonnull
+    @JsonProperty
+    public @NotBlank String storageTypeRaw() {
+        return sender;
+    }
+
+    @Nonnull
+    public Optional<FileStorageType> storageType() {
+        return FileStorageType.optionalByCode(storageType);
     }
 
     public static Builder builder() {
@@ -86,8 +101,9 @@ public final class FileMetadata {
         private String fileId;
         private String fileName;
         private String description;
-        private byte[] fileHash;
+        private HashingProperties hashingProperties;
         private String sender;
+        private String storageType;
 
         public Builder withFileId(String fileId) {
             this.fileId = fileId;
@@ -104,8 +120,8 @@ public final class FileMetadata {
             return this;
         }
 
-        public Builder withFileHash(byte[] fileHash) {
-            this.fileHash = fileHash;
+        public Builder withHashingProperties(HashingProperties hashingProperties) {
+            this.hashingProperties = hashingProperties;
             return this;
         }
 
@@ -114,12 +130,18 @@ public final class FileMetadata {
             return this;
         }
 
+        public Builder withStorageType(String storageType) {
+            this.storageType = storageType;
+            return this;
+        }
+
         public FileMetadata build() {
             return new FileMetadata(fileId,
                     fileName,
                     description,
-                    fileHash,
-                    sender);
+                    hashingProperties,
+                    sender,
+                    storageType);
         }
     }
 
@@ -131,13 +153,13 @@ public final class FileMetadata {
         return Objects.equals(this.fileId, that.fileId) &&
                 Objects.equals(this.fileName, that.fileName) &&
                 Objects.equals(this.description, that.description) &&
-                Objects.equals(this.fileHash, that.fileHash) &&
+                Objects.equals(this.hashingProperties, that.hashingProperties) &&
                 Objects.equals(this.sender, that.sender);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fileId, fileName, description, fileHash, sender);
+        return Objects.hash(fileId, fileName, description, hashingProperties, sender);
     }
 
     @Override
@@ -146,7 +168,7 @@ public final class FileMetadata {
                 "fileId=" + fileId + ", " +
                 "fileName=" + fileName + ", " +
                 "description=" + description + ", " +
-                "fileHash=" + fileHash + ", " +
+                "hashingProperties=" + hashingProperties + ", " +
                 "sender=" + sender + ']';
     }
 

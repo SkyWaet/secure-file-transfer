@@ -4,7 +4,7 @@ import com.skywaet.securefiletransfer.common.identity.IdentityFactory;
 import com.skywaet.securefiletransfer.common.identity.IdentityProperties;
 import com.skywaet.securefiletransfer.common.signer.SignerFactory;
 import com.skywaet.securefiletransfer.common.signer.SignerProperties;
-import com.skywaet.securefiletransfer.consumer.BaseConsumer;
+import com.skywaet.securefiletransfer.consumer.FileTransferConsumer;
 import org.hyperledger.fabric.client.Gateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class Main {
         try (var gateway = gatewayBuilder.connect();
              var executor = Executors.newScheduledThreadPool(10)) {
 
-            var consumer = new BaseConsumer(gateway, "skywaet-channel", "fileTransfer", "topic");
+            var consumer = new FileTransferConsumer(gateway, "skywaet-channel", "fileTransfer", "topic");
             var promise = executor.scheduleAtFixedRate(() -> {
                 log.info("Pulling new events");
                 var events = consumer.pullEvents();
