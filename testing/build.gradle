@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://jitpack.io'
+    }
+}
+
+dependencies {
+    testImplementation project(":consumer"), project(":common"), project(":producer")
+    testImplementation 'org.json:json:20231013'
+    testImplementation 'org.hyperledger.fabric-chaincode-java:fabric-chaincode-shim:2.5.+'
+    testImplementation 'org.apache.logging.log4j:log4j-core:2.23.1'
+    testImplementation 'org.apache.logging.log4j:log4j-slf4j2-impl:2.23.1'
+    testImplementation 'org.slf4j:slf4j-api:2.0.12'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation "org.testcontainers:testcontainers:1.19.7"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.register('copyDist') {
+    var installDistOutputs = tasks.findByPath(":chaincode:installDist").outputs.files.asFileTree
+    inputs.files(installDistOutputs)
+
+    var copyDistOutputs = project.layout.buildDirectory.dir("resources/test/chaincode")
+    outputs.dir(copyDistOutputs)
+
+    doLast {
+        copy {
+            from inputs.files.asFileTree
+            into copyDistOutputs
+        }
+    }
+}
+
+tasks.withType(Test).configureEach {
+    it.inputs.files(tasks.named("copyDist").get().outputs.files.asFileTree)
+}
