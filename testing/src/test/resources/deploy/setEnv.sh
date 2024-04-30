@@ -1,8 +1,8 @@
 #!/bin/bash
 
 function setBaseEnvironment() {
-  export ROOT_PATH=$1
-  export NETWORK_PATH=$(realpath "$ROOT_PATH/test-network")
+  export ROOT_PATH=${PWD}
+  export NETWORK_PATH=$ROOT_PATH/test-network
   export PATH=$ROOT_PATH/bin:$PATH
   export FABRIC_CFG_PATH=$ROOT_PATH/config/
 }

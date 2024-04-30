@@ -8,22 +8,20 @@ package com.skywaet.securefiletransfer.test.util;
 
 import java.io.*;
 import java.lang.ProcessBuilder.Redirect;
-import java.util.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class Command {
 
     protected final List<String> cmd;
-    protected final Map<String, String> env = new HashMap<>();
+    protected final Path workingDirectory;
 
-    Command(List<String> cmd, Map<String, String> additionalEnv) {
+    Command(List<String> cmd, Path workingDirectory) {
         this.cmd = cmd;
-        this.env.putAll(additionalEnv);
-    }
-
-    Command(List<String> cmd) {
-        this(cmd, Collections.emptyMap());
+        this.workingDirectory = workingDirectory;
     }
 
     public static final class Result {
@@ -50,7 +48,9 @@ public class Command {
             cmd.addFirst("wsl.exe");
         }
         ProcessBuilder processBuilder = new ProcessBuilder(cmd);
-        processBuilder.environment().putAll(env);
+        if (workingDirectory != null) {
+            processBuilder.directory(workingDirectory.toFile());
+        }
         final Result result = new Result();
 
         System.out.println("Running:" + this);

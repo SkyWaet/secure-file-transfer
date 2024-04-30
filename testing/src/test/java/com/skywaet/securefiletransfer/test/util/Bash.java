@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents the 'peer' cli command
@@ -23,13 +22,8 @@ public final class Bash extends Command {
 
     static public class BashBuilder extends Command.Builder<Bash> {
         String cmd;
-        String orderer;
-        String channel;
-        String ccname;
-        boolean evaluate = false;
-        int waitForEventTimeout;
-        List<String> args = new ArrayList<String>();
-        Map<String, String> transientData;
+        List<String> args = new ArrayList<>();
+        Path workingDirectory;
 
         public BashBuilder duplicate() {
             try {
@@ -46,22 +40,14 @@ public final class Bash extends Command {
             return this;
         }
 
-        public BashBuilder cmd(Path path) {
-            this.cmd = PathUtils.relativize(path);
-            return this;
-        }
-
         public BashBuilder cmdargs(String... argsArray) {
             this.args = Arrays.asList(argsArray);
             return this;
         }
 
-        public Bash build(Map<String, String> additionalEnv) {
-
-            ArrayList<String> list = new ArrayList<>();
-            list.add(cmd);
-
-            return new Bash(list, additionalEnv);
+        public BashBuilder workingDirectory(Path workingDirectory) {
+            this.workingDirectory = workingDirectory;
+            return this;
         }
 
 
@@ -71,15 +57,11 @@ public final class Bash extends Command {
             list.add(cmd);
             list.addAll(args);
 
-            return new Bash(list);
+            return new Bash(list, workingDirectory);
         }
     }
 
-    Bash(List<String> cmd) {
-        super(cmd);
-    }
-
-    Bash(List<String> cmd, Map<String, String> env) {
-        super(cmd, env);
+    Bash(List<String> cmd, Path workingDirectory) {
+        super(cmd, workingDirectory);
     }
 }
