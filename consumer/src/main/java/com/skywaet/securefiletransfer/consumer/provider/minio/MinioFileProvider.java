@@ -32,7 +32,7 @@ public class MinioFileProvider implements FileProvider {
     @Override
     public @Nonnull InputStream getFileContent() {
         var parameters = GetObjectArgs.builder()
-                .bucket(metadata.fileName())
+                .bucket(metadata.sender().toLowerCase())
                 .object(metadata.fileId())
                 .build();
         return getFileInternal(parameters);

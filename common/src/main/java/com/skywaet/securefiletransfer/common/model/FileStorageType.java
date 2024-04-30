@@ -21,4 +21,9 @@ public enum FileStorageType {
                 .filter(it -> it.code.equals(code))
                 .findAny();
     }
+
+    @Nonnull
+    public String getCode() {
+        return code;
+    }
 }

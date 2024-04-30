@@ -3,4 +3,5 @@ include 'chaincodes'
 include 'consumer'
 include 'common'
 include 'producer'
+include 'chaincode'
 

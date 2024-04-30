@@ -69,10 +69,10 @@ public final class MinioProperties {
         try {
             properties.load(MinioProperties.class.getResourceAsStream("/minio.properties"));
             return new MinioProperties(
-                    properties.getProperty(String.format("%s.getEndpoint", PREFIX)),
-                    properties.getProperty(String.format("%s.getEndpoint", PREFIX)),
-                    properties.getProperty(String.format("%s.getAccessKeyId", PREFIX)),
-                    properties.getProperty(String.format("%s.getSecretAccessKeyId", PREFIX)),
+                    properties.getProperty(String.format("%s.endpoint", PREFIX)),
+                    properties.getProperty(String.format("%s.port", PREFIX)),
+                    properties.getProperty(String.format("%s.accessKeyId", PREFIX)),
+                    properties.getProperty(String.format("%s.secretAccessKeyId", PREFIX)),
                     properties.getProperty(String.format("%s.useSsl", PREFIX), "true")
             );
         } catch (IOException e) {

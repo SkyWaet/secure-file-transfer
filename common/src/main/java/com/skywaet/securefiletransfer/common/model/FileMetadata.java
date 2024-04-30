@@ -1,11 +1,14 @@
 package com.skywaet.securefiletransfer.common.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
+import org.hyperledger.fabric.contract.annotation.DataType;
+import org.hyperledger.fabric.contract.annotation.Property;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -14,80 +17,105 @@ import java.util.Optional;
  * Metadata of the file, used to store data in blockchain
  */
 @JsonPropertyOrder(alphabetic = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@DataType
 public final class FileMetadata {
     @Nonnull
     @JsonProperty
+    @Property
     private final @NotBlank String fileId;
     @Nonnull
     @JsonProperty
+    @Property
     private final @NotBlank String fileName;
     @Nullable
     @JsonProperty
+    @Property
     private final String description;
     @Nonnull
     @JsonProperty
+    @Property
     private final HashingProperties hashingProperties;
     @Nonnull
     @JsonProperty
+    @Property
     private final @NotBlank String sender;
     @Nonnull
     @JsonProperty
+    @Property
     private final @NotBlank String storageType;
+    @Nonnull
+    @JsonProperty
+    @Property
+    private final @NotBlank String status;
 
     @JsonCreator
-    private FileMetadata(@Nonnull @NotBlank @JsonProperty String fileId,
-                         @Nonnull @NotBlank @JsonProperty String fileName,
-                         @Nullable @JsonProperty String description,
-                         @Nonnull @JsonProperty HashingProperties hashingProperties,
-                         @Nonnull @NotBlank @JsonProperty String sender,
-                         @Nonnull String storageType) {
+    private FileMetadata(@Nonnull @NotBlank @JsonProperty("fileId") String fileId,
+                         @Nonnull @NotBlank @JsonProperty("fileName") String fileName,
+                         @Nullable @JsonProperty("description") String description,
+                         @Nonnull @JsonProperty("hashingProperties") HashingProperties hashingProperties,
+                         @Nonnull @NotBlank @JsonProperty("sender") String sender,
+                         @Nonnull @JsonProperty("storageType") String storageType,
+                         @Nonnull @JsonProperty("status") String status) {
         this.fileId = Objects.requireNonNull(fileId);
         this.fileName = Objects.requireNonNull(fileName);
         this.description = description;
         this.hashingProperties = Objects.requireNonNull(hashingProperties);
         this.sender = Objects.requireNonNull(sender);
-        this.storageType = storageType;
+        this.storageType = Objects.requireNonNull(storageType);
+        this.status = Objects.requireNonNull(status);
     }
 
     @Nonnull
-    @JsonProperty
+    @JsonProperty("fileId")
     public @NotBlank String fileId() {
         return fileId;
     }
 
     @Nonnull
-    @JsonProperty
+    @JsonProperty("fileName")
     public @NotBlank String fileName() {
         return fileName;
     }
 
     @Nonnull
-    @JsonProperty
+    @JsonProperty("description")
     public Optional<String> description() {
         return Optional.ofNullable(description);
     }
 
     @Nonnull
-    @JsonProperty
+    @JsonProperty("hashingProperties")
     public HashingProperties hashingProperties() {
         return hashingProperties;
     }
 
     @Nonnull
-    @JsonProperty
+    @JsonProperty("sender")
     public @NotBlank String sender() {
         return sender;
     }
 
     @Nonnull
-    @JsonProperty
+    @JsonProperty("storageType")
     public @NotBlank String storageTypeRaw() {
-        return sender;
+        return storageType;
     }
 
     @Nonnull
     public Optional<FileStorageType> storageType() {
         return FileStorageType.optionalByCode(storageType);
+    }
+
+    @Nonnull
+    @JsonProperty("status")
+    public @NotBlank String statusRaw() {
+        return status;
+    }
+
+    @Nonnull
+    public Optional<FileStatus> status() {
+        return FileStatus.optionalByCode(status);
     }
 
     public static Builder builder() {
@@ -104,6 +132,7 @@ public final class FileMetadata {
         private HashingProperties hashingProperties;
         private String sender;
         private String storageType;
+        private String status;
 
         public Builder withFileId(String fileId) {
             this.fileId = fileId;
@@ -135,13 +164,19 @@ public final class FileMetadata {
             return this;
         }
 
+        public Builder withStatus(String status) {
+            this.status = status;
+            return this;
+        }
+
         public FileMetadata build() {
             return new FileMetadata(fileId,
                     fileName,
                     description,
                     hashingProperties,
                     sender,
-                    storageType);
+                    storageType,
+                    status);
         }
     }
 

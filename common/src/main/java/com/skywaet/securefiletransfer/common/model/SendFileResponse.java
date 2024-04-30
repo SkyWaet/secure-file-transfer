@@ -21,12 +21,12 @@ public class SendFileResponse {
     private final String fileId;
 
     @JsonCreator
-    private SendFileResponse(@Nonnull @JsonProperty String fileId) {
+    private SendFileResponse(@Nonnull @JsonProperty("fileId") String fileId) {
         this.fileId = requireNonNull(fileId, "fileId");
     }
 
     @Nonnull
-    @JsonProperty
+    @JsonProperty("fileId")
     public String getFileId() {
         return fileId;
     }

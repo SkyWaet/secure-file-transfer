@@ -7,13 +7,18 @@ import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
-public class ConfirmReadRequest {
+public class UpdateStatusRequest {
     @Nonnull
     @NotBlank
     private final String fileId;
 
-    private ConfirmReadRequest(@Nonnull String fileId) {
+    @Nonnull
+    private final FileStatus fileStatus;
+
+    private UpdateStatusRequest(@Nonnull String fileId,
+                                @Nonnull FileStatus fileStatus) {
         this.fileId = requireNonNull(fileId, "fileId");
+        this.fileStatus = requireNonNull(fileStatus, "fileStatus");
     }
 
     @Nonnull
@@ -21,23 +26,35 @@ public class ConfirmReadRequest {
         return fileId;
     }
 
+    @Nonnull
+    public FileStatus getFileStatus() {
+        return fileStatus;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
+
 
     public static class Builder {
         private Builder() {
         }
 
         private String fileId;
+        private FileStatus fileStatus;
 
         public Builder withFileId(String fileId) {
             this.fileId = fileId;
             return this;
         }
 
-        public ConfirmReadRequest build() {
-            return new ConfirmReadRequest(fileId);
+        public Builder withFileStatus(FileStatus fileStatus) {
+            this.fileStatus = fileStatus;
+            return this;
+        }
+
+        public UpdateStatusRequest build() {
+            return new UpdateStatusRequest(fileId, fileStatus);
         }
     }
 
@@ -45,7 +62,7 @@ public class ConfirmReadRequest {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ConfirmReadRequest that = (ConfirmReadRequest) o;
+        UpdateStatusRequest that = (UpdateStatusRequest) o;
         return Objects.equals(fileId, that.fileId);
     }
 
@@ -56,7 +73,7 @@ public class ConfirmReadRequest {
 
     @Override
     public String toString() {
-        return "ConfirmReadRequest{" +
+        return "UpdateStatusRequest{" +
                 "fileId='" + fileId + '\'' +
                 '}';
     }

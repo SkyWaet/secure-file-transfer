@@ -1,16 +1,21 @@
 package com.skywaet.securefiletransfer.common.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
 /**
  * Parameters of sendFile method of fileTransfer contract
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class SendFileRequest {
     /**
      * ID of the file in the storage
@@ -28,35 +33,72 @@ public final class SendFileRequest {
     @Nullable
     private final String description;
 
+    @Nonnull
+    private final String hashingAlgorithm;
 
-    private SendFileRequest(@Nonnull @NotBlank String fileId,
-                            @Nonnull @NotBlank String fileName,
-                            @Nullable String description) {
+    @Nonnull
+    private final String storageType;
+
+
+    @JsonCreator
+    private SendFileRequest(@Nonnull @NotBlank @JsonProperty("fileId") String fileId,
+                            @Nonnull @NotBlank @JsonProperty("fileName") String fileName,
+                            @Nullable @JsonProperty("description") String description,
+                            @Nonnull @JsonProperty("hashingAlgorithm") String hashingAlgorithm,
+                            @Nonnull @JsonProperty("storageType") String storageType) {
         requireNonNull(fileId, "fileId");
         requireNonNull(fileName, "fileName");
+        requireNonNull(hashingAlgorithm, "hashingAlgorithm");
+        requireNonNull(storageType, "storageType");
+
         this.fileId = fileId;
         this.fileName = fileName;
+        this.hashingAlgorithm = hashingAlgorithm;
         this.description = description;
+        this.storageType = storageType;
+
     }
 
     @Nonnull
-    public @NotBlank String getFileId() {
+    @JsonProperty("fileId")
+    public String getFileId() {
         return fileId;
     }
 
     @Nonnull
-    public @NotBlank String getFileName() {
+    @JsonProperty("fileName")
+    public String getFileName() {
         return fileName;
     }
 
     @Nullable
+    @JsonProperty("description")
     public String getDescription() {
         return description;
     }
 
-    public Builder builder() {
+    @Nonnull
+    @JsonProperty("hashingAlgorithm")
+    public String getHashingAlgorithm() {
+        return hashingAlgorithm;
+    }
+
+    @Nonnull
+    @JsonProperty("storageType")
+    public String getStorageTypeRaw() {
+        return storageType;
+    }
+
+    @Nonnull
+    public Optional<FileStorageType> getStorageType() {
+        return FileStorageType.optionalByCode(storageType);
+    }
+
+
+    public static Builder builder() {
         return new Builder();
     }
+
 
     public static class Builder {
         private Builder() {
@@ -65,6 +107,8 @@ public final class SendFileRequest {
         private String fileId;
         private String fileName;
         private String description;
+        private String hashingAlgorithm;
+        private String storageType;
 
         public Builder withFileId(String fileId) {
             this.fileId = fileId;
@@ -81,8 +125,19 @@ public final class SendFileRequest {
             return this;
         }
 
+        public Builder withHashingAlgorithm(String hashingAlgorithm) {
+            this.hashingAlgorithm = hashingAlgorithm;
+            return this;
+        }
+
+        public Builder withStorageType(String storageType) {
+            this.storageType = storageType;
+            return this;
+        }
+
+
         public SendFileRequest build() {
-            return new SendFileRequest(fileId, fileName, description);
+            return new SendFileRequest(fileId, fileName, description, hashingAlgorithm, storageType);
         }
     }
 

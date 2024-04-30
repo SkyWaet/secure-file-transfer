@@ -1,6 +1,7 @@
 package com.skywaet.securefiletransfer.common.client;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skywaet.securefiletransfer.common.model.*;
 import jakarta.annotation.Nonnull;
@@ -41,8 +42,8 @@ public class FileTransferClient {
      */
     @Nonnull
     public SendFileResponse sendFile(@Nonnull SendFileRequest request) {
-        var proposal = contract.newProposal("SendFile")
-                .addArguments(request.getFileId(), request.getFileName(), request.getDescription())
+        var proposal = contract.newProposal("sendFile")
+                .addArguments(serialize(request))
                 .build();
         try {
             var transaction = proposal.endorse().submit();
@@ -59,33 +60,37 @@ public class FileTransferClient {
      * @return object with response data
      */
     @Nonnull
-    public ConfirmReadResponse confirmReadFile(@Nonnull ConfirmReadRequest request) {
-        var proposal = contract.newProposal("ConfirmFileRead")
+    public UpdateStatusResponse updateStatus(@Nonnull UpdateStatusRequest request) {
+        var proposal = contract.newProposal("confirmFileRead")
                 .addArguments(request.getFileId())
+                .addArguments(request.getFileStatus().getCode())
                 .build();
         try {
             var transaction = proposal.endorse().submit();
-            return mapper.readValue(transaction, ConfirmReadResponse.class);
+            return mapper.readValue(transaction, UpdateStatusResponse.class);
         } catch (EndorseException | SubmitException | IOException | CommitException | CommitStatusException e) {
             throw new RuntimeException(e);
         }
     }
 
-    /**
-     * Invoke CheckFile method of smart contract
-     *
-     * @param request CheckFile method parameters
-     * @return object with response data
-     */
+
     @Nonnull
-    public CheckFileResponse checkFile(@Nonnull CheckFileRequest request) {
-        var proposal = contract.newProposal("CheckFile")
-                .addArguments(request.getFileId(), new String(request.getFileHash()))
+    public CheckFileStatusResponse checkFileStatus(@Nonnull CheckFileStatusRequest request) {
+        var proposal = contract.newProposal("checkFileStatus")
+                .addArguments(request.getFileId())
                 .build();
         try {
             var transaction = proposal.endorse().submit();
-            return mapper.readValue(transaction, CheckFileResponse.class);
+            return mapper.readValue(transaction, CheckFileStatusResponse.class);
         } catch (EndorseException | SubmitException | IOException | CommitException | CommitStatusException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private <T> byte[] serialize(T obj) {
+        try {
+            return mapper.writeValueAsBytes(obj);
+        } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
