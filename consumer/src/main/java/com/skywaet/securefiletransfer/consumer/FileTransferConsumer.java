@@ -133,9 +133,9 @@ public class FileTransferConsumer {
     private void processMessage(@Nonnull String payload) {
         try {
             var metadata = mapper.readValue(payload, FileMetadata.class);
-//            if (isProceeded(metadata.fileId())) {
-//                return;
-//            }
+            if (isProceeded(metadata.fileId())) {
+                return;
+            }
             var provider = providerFactory.createProvider(metadata);
             verify(provider);
             contentConsumer.accept(provider);

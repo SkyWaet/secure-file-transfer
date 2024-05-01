@@ -10,6 +10,7 @@ import com.skywaet.securefiletransfer.common.model.*;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.errors.*;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.hyperledger.fabric.contract.Context;
 import org.hyperledger.fabric.contract.ContractInterface;
@@ -56,11 +57,10 @@ public class FileTransferContract implements ContractInterface {
     @Transaction(intent = Transaction.TYPE.SUBMIT)
     public String sendFile(Context ctx, String rawRequest) {
         try {
-            log.info("Processing request {}", rawRequest);
+            log.info("Processing send file request {}", rawRequest);
             var request = mapper.readValue(rawRequest, SendFileRequest.class);
 
             var clientId = ctx.getClientIdentity().getMSPID();
-            log.debug(String.format("Client id is %s", clientId));
 
             var fileHash = computeHash(clientId.toLowerCase(), request.getFileId(), request.getHashingAlgorithm());
 
@@ -74,11 +74,11 @@ public class FileTransferContract implements ContractInterface {
                             .withHash(fileHash)
                             .build())
                     .withStorageType(request.getStorageTypeRaw())
-                    .withStatus(FileStatus.PENDING.getCode())
+                    .withStatus(FileStatus.PENDING)
                     .build();
             var metaAsString = mapper.writeValueAsBytes(fileMeta);
             ctx.getStub().putState(request.getFileId(), metaAsString);
-            log.info("File with id={} proceeded successfully", request.getFileId());
+            log.info("File with id={} send successfully", request.getFileId());
 
             ctx.getStub().setEvent("SEND_FILE", metaAsString);
 
@@ -113,5 +113,28 @@ public class FileTransferContract implements ContractInterface {
         }
     }
 
+    @Transaction(intent = Transaction.TYPE.EVALUATE)
+    public String checkFileStatus(Context ctx, String rawRequest) {
+        try {
+            log.info("Processing check file status request {}", rawRequest);
+            var request = mapper.readValue(rawRequest, CheckFileStatusRequest.class);
 
+            var rawState = ctx.getStub().getStringState(request.getFileId());
+            if (StringUtils.isBlank(rawState)) {
+                log.warn("File with id {} not found", request.getFileId());
+                throw new ChaincodeException("File not found, id = " + request.getFileId());
+            }
+
+            var state = mapper.readValue(rawState, FileMetadata.class);
+            var fileStatus = state.status().orElseThrow(() -> new ChaincodeException("unknown file status" + state.statusRaw()));
+            log.info("Requested file status for file with id {} is {}", request.getFileId(), fileStatus.getCode());
+
+            return mapper.writeValueAsString(CheckFileStatusResponse.builder()
+                    .withFileId(request.getFileId())
+                    .withFileStatus(fileStatus)
+                    .build());
+        } catch (JsonProcessingException e) {
+            throw new ChaincodeException(e);
+        }
+    }
 }

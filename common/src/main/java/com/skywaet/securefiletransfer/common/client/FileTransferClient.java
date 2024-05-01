@@ -77,12 +77,12 @@ public class FileTransferClient {
     @Nonnull
     public CheckFileStatusResponse checkFileStatus(@Nonnull CheckFileStatusRequest request) {
         var proposal = contract.newProposal("checkFileStatus")
-                .addArguments(request.getFileId())
+                .addArguments(serialize(request))
                 .build();
         try {
-            var transaction = proposal.endorse().submit();
+            var transaction = proposal.evaluate();
             return mapper.readValue(transaction, CheckFileStatusResponse.class);
-        } catch (EndorseException | SubmitException | IOException | CommitException | CommitStatusException e) {
+        } catch (IOException | GatewayException e) {
             throw new RuntimeException(e);
         }
     }

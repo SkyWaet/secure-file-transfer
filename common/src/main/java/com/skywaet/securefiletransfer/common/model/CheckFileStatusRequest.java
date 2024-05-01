@@ -1,18 +1,26 @@
 package com.skywaet.securefiletransfer.common.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.annotation.Nonnull;
 
 import java.util.Objects;
 
+@JsonPropertyOrder(alphabetic = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CheckFileStatusRequest {
     @Nonnull
     private final String fileId;
 
-    private CheckFileStatusRequest(@Nonnull String fileId) {
+    @JsonCreator
+    private CheckFileStatusRequest(@Nonnull @JsonProperty("fileId") String fileId) {
         this.fileId = Objects.requireNonNull(fileId);
     }
 
     @Nonnull
+    @JsonProperty("fileId")
     public String getFileId() {
         return fileId;
     }

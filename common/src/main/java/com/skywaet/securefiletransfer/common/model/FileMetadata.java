@@ -55,8 +55,8 @@ public final class FileMetadata {
                          @Nullable @JsonProperty("description") String description,
                          @Nonnull @JsonProperty("hashingProperties") HashingProperties hashingProperties,
                          @Nonnull @NotBlank @JsonProperty("sender") String sender,
-                         @Nonnull @JsonProperty("storageType") String storageType,
-                         @Nonnull @JsonProperty("status") String status) {
+                         @Nonnull @NotBlank @JsonProperty("storageType") String storageType,
+                         @Nonnull @NotBlank @JsonProperty("status") String status) {
         this.fileId = Objects.requireNonNull(fileId);
         this.fileName = Objects.requireNonNull(fileName);
         this.description = description;
@@ -164,8 +164,8 @@ public final class FileMetadata {
             return this;
         }
 
-        public Builder withStatus(String status) {
-            this.status = status;
+        public Builder withStatus(FileStatus status) {
+            this.status = status.getCode();
             return this;
         }
 

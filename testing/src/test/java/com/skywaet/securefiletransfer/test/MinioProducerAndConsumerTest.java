@@ -36,11 +36,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 public class MinioProducerAndConsumerTest extends AbstractIntegrationTest {
 
@@ -134,8 +137,18 @@ public class MinioProducerAndConsumerTest extends AbstractIntegrationTest {
                 throw new RuntimeException(e);
             }
 
-            var consumedFileContent = Files.readString(getWorkingDirectory().resolve("output/" + fileId));
+            var consumedFilePath = getWorkingDirectory().resolve("output/" + fileId);
+
+            await()
+                    .atMost(Duration.of(5, ChronoUnit.SECONDS))
+                    .until(() -> Files.exists(consumedFilePath));
+            assertThat(Files.exists(consumedFilePath))
+                    .as("File was consumed")
+                    .isTrue();
+
+            var consumedFileContent = Files.readString(consumedFilePath);
             assertThat(consumedFileContent).isEqualTo(originalFileContent);
+            consumer.terminate();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -1,12 +1,16 @@
 package com.skywaet.securefiletransfer.common.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.annotation.Nonnull;
 
 import java.util.Objects;
 import java.util.Optional;
 
+@JsonPropertyOrder(alphabetic = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CheckFileStatusResponse {
 
     @Nonnull
@@ -16,20 +20,20 @@ public class CheckFileStatusResponse {
     private final String fileStatus;
 
     @JsonCreator
-    private CheckFileStatusResponse(@JsonProperty @Nonnull String fileId,
-                                    @JsonProperty @Nonnull String fileStatus) {
+    private CheckFileStatusResponse(@JsonProperty("fileId") @Nonnull String fileId,
+                                    @JsonProperty("fileStatus") @Nonnull String fileStatus) {
         this.fileId = Objects.requireNonNull(fileId);
         this.fileStatus = Objects.requireNonNull(fileStatus);
     }
 
     @Nonnull
-    @JsonProperty
+    @JsonProperty("fileId")
     public String getFileId() {
         return fileId;
     }
 
     @Nonnull
-    @JsonProperty
+    @JsonProperty("fileStatus")
     public String getFileStatusRaw() {
         return fileStatus;
     }
@@ -57,8 +61,8 @@ public class CheckFileStatusResponse {
             return this;
         }
 
-        public Builder withFileStatus(String fileStatus) {
-            this.fileStatus = fileStatus;
+        public Builder withFileStatus(FileStatus fileStatus) {
+            this.fileStatus = fileStatus.getCode();
             return this;
         }
 
