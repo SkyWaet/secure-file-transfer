@@ -4,7 +4,10 @@ import com.skywaet.securefiletransfer.test.util.Bash;
 import com.skywaet.securefiletransfer.test.util.FabricState;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -13,7 +16,8 @@ import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AbstractIntegrationTest {
+@Testcontainers
+public abstract class AbstractIntegrationTest {
 
     private static final Pattern CHAINCODE_IDENTIFIER = Pattern.compile("fileTransfer_\\d+:\\w+");
     private static Path workingDirectory;
@@ -21,12 +25,12 @@ public class AbstractIntegrationTest {
     private String channelName;
 
     @BeforeAll
-    public static void startNetwork() {
+    public static void startContainers() {
         try (var files = Files.list(Path.of("src/test/resources"))) {
             workingDirectory = Files.createTempDirectory("int-test");
             workingDirectory.toFile().deleteOnExit();
 
-            files.forEach(it -> {
+            files.filter(Files::isDirectory).forEach(it -> {
                 try {
                     FileUtils.copyDirectory(it.toFile(), workingDirectory.resolve(it.getFileName()).toFile());
                 } catch (IOException e) {
@@ -82,9 +86,12 @@ public class AbstractIntegrationTest {
 
     }
 
-    @Test
-    public void test() {
-        Assertions.assertEquals(1, 2);
+    public Path getWorkingDirectory() {
+        return workingDirectory;
+    }
+
+    public String getChannelName() {
+        return channelName;
     }
 
 }
