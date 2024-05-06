@@ -69,7 +69,7 @@ public class FileTransferContract implements ContractInterface {
                     .withFileName(request.getFileName())
                     .withDescription(request.getDescription())
                     .withSender(clientId)
-                    .withHashingProperties(HashingProperties.builder()
+                    .withVerificationProperties(VerificationProperties.builder()
                             .withAlgorithm(request.getHashingAlgorithm())
                             .withHash(fileHash)
                             .build())

@@ -8,7 +8,6 @@ import java.util.Optional;
 
 public enum FileStatus {
     CONSUMED("consumed"),
-    CONSUMER_ERROR("consumer_error"),
     PROVIDER_ERROR("provider_error"),
     PENDING("pending");
 

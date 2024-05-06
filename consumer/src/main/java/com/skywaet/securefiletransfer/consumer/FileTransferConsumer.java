@@ -161,14 +161,14 @@ public class FileTransferConsumer {
     private void checkHash(@Nonnull FileProvider provider) {
         try (var content = provider.getFileContent()) {
 
-            var messageDigest = MessageDigest.getInstance(provider.getMetadata().hashingProperties().getAlgorithm());
+            var messageDigest = MessageDigest.getInstance(provider.getMetadata().verificationProperties().getHashingAlgorithm());
             var buffer = new byte[1024];
 
             while (content.read(buffer) > 0) {
                 messageDigest.update(buffer);
             }
             var actual = messageDigest.digest();
-            var expected = provider.getMetadata().hashingProperties().getHash();
+            var expected = provider.getMetadata().verificationProperties().getHash();
             if (!Arrays.equals(expected, actual)) {
                 throw new IllegalStateException("Actual hash is not equal to expected");
             }

@@ -24,7 +24,7 @@ public final class FileMetadata {
     @JsonProperty
     @Property
     private final @NotBlank String fileId;
-    @Nonnull
+    @Nullable
     @JsonProperty
     @Property
     private final @NotBlank String fileName;
@@ -35,7 +35,7 @@ public final class FileMetadata {
     @Nonnull
     @JsonProperty
     @Property
-    private final HashingProperties hashingProperties;
+    private final VerificationProperties verificationProperties;
     @Nonnull
     @JsonProperty
     @Property
@@ -51,16 +51,16 @@ public final class FileMetadata {
 
     @JsonCreator
     private FileMetadata(@Nonnull @NotBlank @JsonProperty("fileId") String fileId,
-                         @Nonnull @NotBlank @JsonProperty("fileName") String fileName,
+                         @Nullable @JsonProperty("fileName") String fileName,
                          @Nullable @JsonProperty("description") String description,
-                         @Nonnull @JsonProperty("hashingProperties") HashingProperties hashingProperties,
+                         @Nonnull @JsonProperty("verificationProperties") VerificationProperties verificationProperties,
                          @Nonnull @NotBlank @JsonProperty("sender") String sender,
                          @Nonnull @NotBlank @JsonProperty("storageType") String storageType,
                          @Nonnull @NotBlank @JsonProperty("status") String status) {
         this.fileId = Objects.requireNonNull(fileId);
-        this.fileName = Objects.requireNonNull(fileName);
+        this.fileName = fileName;
         this.description = description;
-        this.hashingProperties = Objects.requireNonNull(hashingProperties);
+        this.verificationProperties = Objects.requireNonNull(verificationProperties);
         this.sender = Objects.requireNonNull(sender);
         this.storageType = Objects.requireNonNull(storageType);
         this.status = Objects.requireNonNull(status);
@@ -74,8 +74,8 @@ public final class FileMetadata {
 
     @Nonnull
     @JsonProperty("fileName")
-    public @NotBlank String fileName() {
-        return fileName;
+    public Optional<String> fileName() {
+        return Optional.ofNullable(fileName);
     }
 
     @Nonnull
@@ -85,9 +85,9 @@ public final class FileMetadata {
     }
 
     @Nonnull
-    @JsonProperty("hashingProperties")
-    public HashingProperties hashingProperties() {
-        return hashingProperties;
+    @JsonProperty("verificationProperties")
+    public VerificationProperties verificationProperties() {
+        return verificationProperties;
     }
 
     @Nonnull
@@ -129,7 +129,7 @@ public final class FileMetadata {
         private String fileId;
         private String fileName;
         private String description;
-        private HashingProperties hashingProperties;
+        private VerificationProperties verificationProperties;
         private String sender;
         private String storageType;
         private String status;
@@ -149,8 +149,8 @@ public final class FileMetadata {
             return this;
         }
 
-        public Builder withHashingProperties(HashingProperties hashingProperties) {
-            this.hashingProperties = hashingProperties;
+        public Builder withVerificationProperties(VerificationProperties verificationProperties) {
+            this.verificationProperties = verificationProperties;
             return this;
         }
 
@@ -173,7 +173,7 @@ public final class FileMetadata {
             return new FileMetadata(fileId,
                     fileName,
                     description,
-                    hashingProperties,
+                    verificationProperties,
                     sender,
                     storageType,
                     status);
@@ -188,13 +188,13 @@ public final class FileMetadata {
         return Objects.equals(this.fileId, that.fileId) &&
                 Objects.equals(this.fileName, that.fileName) &&
                 Objects.equals(this.description, that.description) &&
-                Objects.equals(this.hashingProperties, that.hashingProperties) &&
+                Objects.equals(this.verificationProperties, that.verificationProperties) &&
                 Objects.equals(this.sender, that.sender);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fileId, fileName, description, hashingProperties, sender);
+        return Objects.hash(fileId, fileName, description, verificationProperties, sender);
     }
 
     @Override
@@ -203,7 +203,7 @@ public final class FileMetadata {
                 "fileId=" + fileId + ", " +
                 "fileName=" + fileName + ", " +
                 "description=" + description + ", " +
-                "hashingProperties=" + hashingProperties + ", " +
+                "verificationProperties=" + verificationProperties + ", " +
                 "sender=" + sender + ']';
     }
 
