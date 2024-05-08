@@ -9,14 +9,14 @@ import jakarta.annotation.Nullable;
 import java.util.Optional;
 
 @JsonPropertyOrder(alphabetic = true)
-public class UpdateStatusResponse {
-    private final boolean success;
+public class UpdateFileStatusResponse {
+    private final Boolean success;
     @Nullable
     private final String errorMessage;
 
     @JsonCreator
-    private UpdateStatusResponse(@JsonProperty boolean success,
-                                 @JsonProperty @Nullable String errorMessage) {
+    private UpdateFileStatusResponse(@Nonnull @JsonProperty("success") Boolean success,
+                                     @Nullable @JsonProperty("errorMessage") String errorMessage) {
         this.success = success;
         if (success && errorMessage != null) {
             throw new IllegalArgumentException("There should be no error message in successful response");
@@ -24,13 +24,14 @@ public class UpdateStatusResponse {
         this.errorMessage = errorMessage;
     }
 
-    @JsonProperty
-    public boolean isSuccess() {
+    @Nonnull
+    @JsonProperty("success")
+    public Boolean isSuccess() {
         return success;
     }
 
     @Nonnull
-    @JsonProperty
+    @JsonProperty("errorMessage")
     public Optional<String> getErrorMessage() {
         return Optional.ofNullable(errorMessage);
     }
@@ -56,8 +57,8 @@ public class UpdateStatusResponse {
             return this;
         }
 
-        public UpdateStatusResponse build() {
-            return new UpdateStatusResponse(success, errorMessage);
+        public UpdateFileStatusResponse build() {
+            return new UpdateFileStatusResponse(success, errorMessage);
         }
     }
 }

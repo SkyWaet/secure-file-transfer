@@ -13,6 +13,8 @@ import org.hyperledger.fabric.contract.annotation.Property;
 import java.util.Objects;
 import java.util.Optional;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Metadata of the file, used to store data in blockchain
  */
@@ -133,6 +135,18 @@ public final class FileMetadata {
         private String sender;
         private String storageType;
         private String status;
+
+        public Builder fromPrototype(@Nonnull FileMetadata fileMetadata) {
+            requireNonNull(fileMetadata, "fileMetadata");
+            this.fileId = fileMetadata.fileId();
+            this.fileName = fileMetadata.fileName().orElse(null);
+            this.description = fileMetadata.description().orElse(null);
+            this.verificationProperties = fileMetadata.verificationProperties();
+            this.sender = fileMetadata.sender;
+            this.storageType = fileMetadata.storageTypeRaw();
+            this.status = fileMetadata.statusRaw();
+            return this;
+        }
 
         public Builder withFileId(String fileId) {
             this.fileId = fileId;

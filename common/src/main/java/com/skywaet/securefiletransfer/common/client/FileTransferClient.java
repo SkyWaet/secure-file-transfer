@@ -54,20 +54,19 @@ public class FileTransferClient {
     }
 
     /**
-     * Invoke ConfirmRead method of smart contract
+     * Invoke updateFileStatus method of smart contract
      *
      * @param request ConfirmRead method parameters
      * @return object with response data
      */
     @Nonnull
-    public UpdateStatusResponse updateStatus(@Nonnull UpdateStatusRequest request) {
-        var proposal = contract.newProposal("confirmFileRead")
-                .addArguments(request.getFileId())
-                .addArguments(request.getFileStatus().getCode())
+    public UpdateFileStatusResponse updateFileStatus(@Nonnull UpdateFileStatusRequest request) {
+        var proposal = contract.newProposal("updateFileStatus")
+                .addArguments(serialize(request))
                 .build();
         try {
             var transaction = proposal.endorse().submit();
-            return mapper.readValue(transaction, UpdateStatusResponse.class);
+            return mapper.readValue(transaction, UpdateFileStatusResponse.class);
         } catch (EndorseException | SubmitException | IOException | CommitException | CommitStatusException e) {
             throw new RuntimeException(e);
         }
@@ -75,13 +74,13 @@ public class FileTransferClient {
 
 
     @Nonnull
-    public CheckFileStatusResponse checkFileStatus(@Nonnull CheckFileStatusRequest request) {
-        var proposal = contract.newProposal("checkFileStatus")
+    public GetFileStatusResponse getFileStatus(@Nonnull GetFileStatusRequest request) {
+        var proposal = contract.newProposal("getFileStatus")
                 .addArguments(serialize(request))
                 .build();
         try {
             var transaction = proposal.evaluate();
-            return mapper.readValue(transaction, CheckFileStatusResponse.class);
+            return mapper.readValue(transaction, GetFileStatusResponse.class);
         } catch (IOException | GatewayException e) {
             throw new RuntimeException(e);
         }

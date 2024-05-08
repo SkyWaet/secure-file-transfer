@@ -7,7 +7,9 @@ import com.skywaet.securefiletransfer.common.connection.ConnectionFactory;
 import com.skywaet.securefiletransfer.common.connection.ConnectionProperties;
 import com.skywaet.securefiletransfer.common.identity.IdentityFactory;
 import com.skywaet.securefiletransfer.common.identity.IdentityProperties;
+import com.skywaet.securefiletransfer.common.model.FileStatus;
 import com.skywaet.securefiletransfer.common.model.FileStorageType;
+import com.skywaet.securefiletransfer.common.model.GetFileStatusRequest;
 import com.skywaet.securefiletransfer.common.signer.SignerFactory;
 import com.skywaet.securefiletransfer.common.signer.SignerProperties;
 import com.skywaet.securefiletransfer.consumer.FileTransferConsumer;
@@ -149,10 +151,22 @@ public class MinioProducerAndConsumerTest extends AbstractIntegrationTest {
             var consumedFileContent = Files.readString(consumedFilePath);
             assertThat(consumedFileContent).isEqualTo(originalFileContent);
             consumer.terminate();
+
+            var fileStatusInTheEnd = fileTransferClient.getFileStatus(GetFileStatusRequest.builder()
+                    .withFileId(fileId)
+                    .build()).getFileStatus();
+            assertThat(fileStatusInTheEnd.isPresent()).as("File status is present").isTrue();
+
+            await()
+                    .atMost(Duration.of(5, ChronoUnit.SECONDS))
+                    .untilAsserted(() -> assertThat(fileStatusInTheEnd.orElseThrow())
+                            .isEqualTo(FileStatus.CONSUMED));
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
 
 
     private FileTransferConsumer createConsumer(Gateway gateway,

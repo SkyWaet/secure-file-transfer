@@ -7,22 +7,40 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.annotation.Nonnull;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @JsonPropertyOrder(alphabetic = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CheckFileStatusRequest {
+public class GetFileStatusResponse {
+
     @Nonnull
     private final String fileId;
 
+    @Nonnull
+    private final String fileStatus;
+
     @JsonCreator
-    private CheckFileStatusRequest(@Nonnull @JsonProperty("fileId") String fileId) {
+    private GetFileStatusResponse(@JsonProperty("fileId") @Nonnull String fileId,
+                                  @JsonProperty("fileStatus") @Nonnull String fileStatus) {
         this.fileId = Objects.requireNonNull(fileId);
+        this.fileStatus = Objects.requireNonNull(fileStatus);
     }
 
     @Nonnull
     @JsonProperty("fileId")
     public String getFileId() {
         return fileId;
+    }
+
+    @Nonnull
+    @JsonProperty("fileStatus")
+    public String getFileStatusRaw() {
+        return fileStatus;
+    }
+
+    @Nonnull
+    public Optional<FileStatus> getFileStatus() {
+        return FileStatus.optionalByCode(fileStatus);
     }
 
 
@@ -36,13 +54,20 @@ public class CheckFileStatusRequest {
 
         private String fileId;
 
+        private String fileStatus;
+
         public Builder withFileId(String fileId) {
             this.fileId = fileId;
             return this;
         }
 
-        public CheckFileStatusRequest build() {
-            return new CheckFileStatusRequest(fileId);
+        public Builder withFileStatus(FileStatus fileStatus) {
+            this.fileStatus = fileStatus.getCode();
+            return this;
+        }
+
+        public GetFileStatusResponse build() {
+            return new GetFileStatusResponse(fileId, fileStatus);
         }
     }
 }

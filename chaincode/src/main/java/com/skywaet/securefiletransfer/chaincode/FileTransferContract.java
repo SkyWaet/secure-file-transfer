@@ -80,7 +80,7 @@ public class FileTransferContract implements ContractInterface {
             ctx.getStub().putState(request.getFileId(), metaAsString);
             log.info("File with id={} send successfully", request.getFileId());
 
-            ctx.getStub().setEvent("SEND_FILE", metaAsString);
+            ctx.getStub().setEvent(ChaincodeEventType.SEND_FILE.getCode(), metaAsString);
 
             return mapper.writeValueAsString(SendFileResponse.builder()
                     .withFileId(request.getFileId())
@@ -114,10 +114,10 @@ public class FileTransferContract implements ContractInterface {
     }
 
     @Transaction(intent = Transaction.TYPE.EVALUATE)
-    public String checkFileStatus(Context ctx, String rawRequest) {
+    public String getFileStatus(Context ctx, String rawRequest) {
         try {
-            log.info("Processing check file status request {}", rawRequest);
-            var request = mapper.readValue(rawRequest, CheckFileStatusRequest.class);
+            log.info("Processing get file status request {}", rawRequest);
+            var request = mapper.readValue(rawRequest, GetFileStatusRequest.class);
 
             var rawState = ctx.getStub().getStringState(request.getFileId());
             if (StringUtils.isBlank(rawState)) {
@@ -129,9 +129,39 @@ public class FileTransferContract implements ContractInterface {
             var fileStatus = state.status().orElseThrow(() -> new ChaincodeException("unknown file status" + state.statusRaw()));
             log.info("Requested file status for file with id {} is {}", request.getFileId(), fileStatus.getCode());
 
-            return mapper.writeValueAsString(CheckFileStatusResponse.builder()
+            return mapper.writeValueAsString(GetFileStatusResponse.builder()
                     .withFileId(request.getFileId())
                     .withFileStatus(fileStatus)
+                    .build());
+        } catch (JsonProcessingException e) {
+            throw new ChaincodeException(e);
+        }
+    }
+
+    @Transaction(intent = Transaction.TYPE.SUBMIT)
+    public String updateFileStatus(Context ctx, String rawRequest) {
+        try {
+            log.info("Processing update file status request {}", rawRequest);
+            var request = mapper.readValue(rawRequest, UpdateFileStatusRequest.class);
+
+            var rawState = ctx.getStub().getStringState(request.getFileId());
+            if (StringUtils.isBlank(rawState)) {
+                log.warn("File with id {} not found", request.getFileId());
+                return mapper.writeValueAsString(UpdateFileStatusResponse.builder()
+                        .withSuccess(false)
+                        .withErrorMessage("File not found, id = " + request.getFileId())
+                        .build());
+            }
+            var state = mapper.readValue(rawState, FileMetadata.class);
+            var modifiedState = FileMetadata.builder()
+                    .fromPrototype(state)
+                    .withStatus(request.getFileStatus()
+                            .orElseThrow(() -> new ChaincodeException("unknown file status" + request.getFileStatusRaw())))
+                    .build();
+            ctx.getStub().putState(request.getFileId(), mapper.writeValueAsBytes(modifiedState));
+
+            return mapper.writeValueAsString(UpdateFileStatusResponse.builder()
+                    .withSuccess(true)
                     .build());
         } catch (JsonProcessingException e) {
             throw new ChaincodeException(e);

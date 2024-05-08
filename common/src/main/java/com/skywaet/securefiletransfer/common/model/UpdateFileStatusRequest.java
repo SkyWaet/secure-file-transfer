@@ -1,34 +1,47 @@
 package com.skywaet.securefiletransfer.common.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
-public class UpdateStatusRequest {
+@JsonPropertyOrder(alphabetic = true)
+public class UpdateFileStatusRequest {
     @Nonnull
     @NotBlank
     private final String fileId;
 
     @Nonnull
-    private final FileStatus fileStatus;
+    private final String fileStatus;
 
-    private UpdateStatusRequest(@Nonnull String fileId,
-                                @Nonnull FileStatus fileStatus) {
+    @JsonCreator
+    private UpdateFileStatusRequest(@Nonnull @JsonProperty("fileId") String fileId,
+                                    @Nonnull @JsonProperty("fileStatus") String fileStatus) {
         this.fileId = requireNonNull(fileId, "fileId");
         this.fileStatus = requireNonNull(fileStatus, "fileStatus");
     }
 
     @Nonnull
+    @JsonProperty("fileId")
     public String getFileId() {
         return fileId;
     }
 
     @Nonnull
-    public FileStatus getFileStatus() {
+    @JsonProperty("fileStatus")
+    public String getFileStatusRaw() {
         return fileStatus;
+    }
+
+    @Nonnull
+    public Optional<FileStatus> getFileStatus() {
+        return FileStatus.optionalByCode(fileStatus);
     }
 
     public static Builder builder() {
@@ -53,8 +66,8 @@ public class UpdateStatusRequest {
             return this;
         }
 
-        public UpdateStatusRequest build() {
-            return new UpdateStatusRequest(fileId, fileStatus);
+        public UpdateFileStatusRequest build() {
+            return new UpdateFileStatusRequest(fileId, fileStatus.getCode());
         }
     }
 
@@ -62,7 +75,7 @@ public class UpdateStatusRequest {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UpdateStatusRequest that = (UpdateStatusRequest) o;
+        UpdateFileStatusRequest that = (UpdateFileStatusRequest) o;
         return Objects.equals(fileId, that.fileId);
     }
 
@@ -73,7 +86,7 @@ public class UpdateStatusRequest {
 
     @Override
     public String toString() {
-        return "UpdateStatusRequest{" +
+        return "UpdateFileStatusRequest{" +
                 "fileId='" + fileId + '\'' +
                 '}';
     }

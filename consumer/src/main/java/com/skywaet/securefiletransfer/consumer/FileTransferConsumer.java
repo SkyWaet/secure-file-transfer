@@ -2,10 +2,11 @@ package com.skywaet.securefiletransfer.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skywaet.securefiletransfer.common.client.FileTransferClient;
-import com.skywaet.securefiletransfer.common.model.CheckFileStatusRequest;
+import com.skywaet.securefiletransfer.common.model.ChaincodeEventType;
 import com.skywaet.securefiletransfer.common.model.FileMetadata;
 import com.skywaet.securefiletransfer.common.model.FileStatus;
-import com.skywaet.securefiletransfer.common.model.UpdateStatusRequest;
+import com.skywaet.securefiletransfer.common.model.GetFileStatusRequest;
+import com.skywaet.securefiletransfer.common.model.UpdateFileStatusRequest;
 import com.skywaet.securefiletransfer.consumer.provider.CommonFileProviderFactory;
 import com.skywaet.securefiletransfer.consumer.provider.FileProvider;
 import io.grpc.Status;
@@ -111,9 +112,20 @@ public class FileTransferConsumer {
         try (var events = request.getEvents()) {
             events.forEachRemaining(event -> {
                 log.info("processing new event");
-                var payload = new String(event.getPayload(), StandardCharsets.UTF_8);
-                tasks.add(executor.submit(() -> processMessage(payload), event));
-                log.info("found event {}", event.getEventName());
+                var eventType = ChaincodeEventType.optionalByCode(event.getEventName());
+                eventType.ifPresentOrElse(
+                        type -> {
+                            switch (type) {
+                                case SEND_FILE -> {
+                                    var payload = new String(event.getPayload(), StandardCharsets.UTF_8);
+                                    tasks.add(executor.submit(() -> processMessage(payload), event));
+                                    log.info("found event {}", event.getEventName());
+                                }
+                                case UPDATE_FILE_STATUS -> log.info("Skip events with type {}", type.getCode());
+                            }
+                        },
+                        () -> log.warn("Found unknown event type {}", event.getEventName())
+                );
             });
             return tasks;
         } catch (GatewayRuntimeException e) {
@@ -139,7 +151,7 @@ public class FileTransferConsumer {
             var provider = providerFactory.createProvider(metadata);
             verify(provider);
             contentConsumer.accept(provider);
-          //  confirmRead(metadata);
+            confirmRead(metadata);
         } catch (IOException e) {
             log.error("Error while processing payload {}", payload, e);
             throw new RuntimeException(e);
@@ -147,7 +159,7 @@ public class FileTransferConsumer {
     }
 
     private boolean isProceeded(@Nonnull String fileId) {
-        var response = fileTransferClient.checkFileStatus(CheckFileStatusRequest.builder()
+        var response = fileTransferClient.getFileStatus(GetFileStatusRequest.builder()
                 .withFileId(fileId)
                 .build());
 
@@ -180,7 +192,7 @@ public class FileTransferConsumer {
     }
 
     private void confirmRead(FileMetadata metadata) {
-        var response = fileTransferClient.updateStatus(UpdateStatusRequest.builder()
+        var response = fileTransferClient.updateFileStatus(UpdateFileStatusRequest.builder()
                 .withFileId(metadata.fileId())
                 .withFileStatus(FileStatus.CONSUMED)
                 .build());
