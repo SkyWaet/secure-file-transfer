@@ -19,15 +19,21 @@ import org.hyperledger.fabric.contract.annotation.Default;
 import org.hyperledger.fabric.contract.annotation.Info;
 import org.hyperledger.fabric.contract.annotation.Transaction;
 import org.hyperledger.fabric.shim.ChaincodeException;
+import org.hyperledger.fabric.shim.ChaincodeStub;
+import org.hyperledger.fabric.shim.ledger.CompositeKey;
+import org.hyperledger.fabric.shim.ledger.KeyValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Contract(
         name = "fileTransfer",
@@ -166,5 +172,60 @@ public class FileTransferContract implements ContractInterface {
         } catch (JsonProcessingException e) {
             throw new ChaincodeException(e);
         }
+    }
+
+    @Transaction(intent = Transaction.TYPE.SUBMIT)
+    public void deleteFile(Context ctx, String rawRequest) {
+        try {
+            log.info("Processing delete file request {}", rawRequest);
+            var request = mapper.readValue(rawRequest, DeleteFileRequest.class);
+
+            var rawState = ctx.getStub().getStringState(request.getFileId());
+            if (StringUtils.isBlank(rawState)) {
+                log.warn("File with id {} not found", request.getFileId());
+                throw new ChaincodeException("File not found, id = " + request.getFileId());
+            }
+            var state = mapper.readValue(rawState, FileMetadata.class);
+            var key = getCompositeKey(ctx.getStub(),
+                    new String(state.verificationProperties().getHash(), StandardCharsets.UTF_8),
+                    state.fileId());
+            ctx.getStub().putState(key.toString(), state.fileId().getBytes(StandardCharsets.UTF_8));
+            ctx.getStub().delState(state.fileId());
+        } catch (JsonProcessingException e) {
+            throw new ChaincodeException(e);
+        }
+    }
+
+    @Transaction(intent = Transaction.TYPE.EVALUATE)
+    public String checkFileByContentHash(Context ctx, String rawRequest) {
+        try {
+            log.info("Processing checkFileByContentHash request {}", rawRequest);
+            var request = mapper.readValue(rawRequest, CheckFileByContentHashRequest.class);
+
+            var partialKey = getCompositeKey(ctx.getStub(), new String(request.getHash(), StandardCharsets.UTF_8));
+            var partialKeyIterator = ctx.getStub().getStateByPartialCompositeKey(partialKey).spliterator();
+
+            var foundFileIds = StreamSupport.stream(partialKeyIterator, false)
+                    .map(KeyValue::getStringValue)
+                    .collect(Collectors.toList());
+
+            if (foundFileIds.isEmpty()) {
+                log.info("No files with requested hash found, hash = {}", request.getHash());
+                return mapper.writeValueAsString(CheckFileByContentHashResponse.builder()
+                        .withStatus(CheckFileByContentHashResponse.Status.NOT_FOUND)
+                        .build());
+            }
+            log.info("Found {} files with requested hash", foundFileIds.size());
+            return mapper.writeValueAsString(CheckFileByContentHashResponse.builder()
+                    .withStatus(CheckFileByContentHashResponse.Status.SUCCESS)
+                    .withPossibleFileIds(foundFileIds)
+                    .build());
+        } catch (JsonProcessingException e) {
+            throw new ChaincodeException(e);
+        }
+    }
+
+    private CompositeKey getCompositeKey(ChaincodeStub stub, String... params) {
+        return stub.createCompositeKey("deleted", params);
     }
 }

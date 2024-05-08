@@ -73,6 +73,12 @@ public class FileTransferClient {
     }
 
 
+    /**
+     * Invoke getFileStatus method of smart contract
+     *
+     * @param request getFileStatus request parameters
+     * @return object with response data
+     */
     @Nonnull
     public GetFileStatusResponse getFileStatus(@Nonnull GetFileStatusRequest request) {
         var proposal = contract.newProposal("getFileStatus")
@@ -82,6 +88,36 @@ public class FileTransferClient {
             var transaction = proposal.evaluate();
             return mapper.readValue(transaction, GetFileStatusResponse.class);
         } catch (IOException | GatewayException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deleteFile(@Nonnull DeleteFileRequest request) {
+        var proposal = contract.newProposal("deleteFile")
+                .addArguments(serialize(request))
+                .build();
+        try {
+            proposal.endorse().submit();
+        } catch (GatewayException | CommitException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Invoke checkFileByContentHash method of smart contract. Used to confirm that file was sent
+     *
+     * @param request checkFileByContentHash request parameters
+     * @return object with response data
+     */
+    @Nonnull
+    public CheckFileByContentHashResponse checkFileByContentHash(@Nonnull CheckFileByContentHashRequest request) {
+        var proposal = contract.newProposal("checkFileByContentHash")
+                .addArguments(serialize(request))
+                .build();
+        try {
+            var transaction = proposal.endorse().submit();
+            return mapper.readValue(transaction, CheckFileByContentHashResponse.class);
+        } catch (IOException | GatewayException | CommitException e) {
             throw new RuntimeException(e);
         }
     }
