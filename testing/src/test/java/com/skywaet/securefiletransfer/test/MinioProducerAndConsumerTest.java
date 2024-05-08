@@ -69,7 +69,7 @@ public class MinioProducerAndConsumerTest extends AbstractIntegrationTest {
     @BeforeEach
     public void setUp() throws Exception {
         minioClient = MinioClient.builder()
-                .endpoint("http://%s:%d" .formatted(minio.getServiceHost("minio", 9000), 9000))
+                .endpoint("http://%s:%d".formatted(minio.getServiceHost("minio", 9000), 9000))
                 .credentials("minioadmin", "minioadmin")
                 .build();
 
@@ -112,7 +112,7 @@ public class MinioProducerAndConsumerTest extends AbstractIntegrationTest {
 
         try (var gateway = gatewayBuilder.connect()) {
             var fileTransferClient = new FileTransferClient(gateway, getChannelName(), "fileTransfer", mapper);
-            var consumer = createConsumer(gateway, fileTransferClient, minioClient);
+            var consumer = createConsumer(gateway, minioClient);
 
             var minioFileStorage = new MinioFileStorage("org1msp", minioClient);
             var producer = new FileTransferProducer(fileTransferClient, List.of(minioFileStorage));
@@ -168,9 +168,7 @@ public class MinioProducerAndConsumerTest extends AbstractIntegrationTest {
     }
 
 
-
     private FileTransferConsumer createConsumer(Gateway gateway,
-                                                FileTransferClient fileTransferClient,
                                                 MinioClient minioClient) {
         var minioProviderFactory = new MinioFileProviderFactory(minioClient);
         var commonFactory = new CommonFileProviderFactory(List.of(minioProviderFactory));
@@ -193,7 +191,6 @@ public class MinioProducerAndConsumerTest extends AbstractIntegrationTest {
         return new FileTransferConsumer(gateway,
                 getChannelName(),
                 "fileTransfer",
-                fileTransferClient,
                 commonFactory,
                 contentConsumer
         );

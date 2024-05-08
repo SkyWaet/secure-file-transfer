@@ -2,11 +2,7 @@ package com.skywaet.securefiletransfer.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skywaet.securefiletransfer.common.client.FileTransferClient;
-import com.skywaet.securefiletransfer.common.model.ChaincodeEventType;
-import com.skywaet.securefiletransfer.common.model.FileMetadata;
-import com.skywaet.securefiletransfer.common.model.FileStatus;
-import com.skywaet.securefiletransfer.common.model.GetFileStatusRequest;
-import com.skywaet.securefiletransfer.common.model.UpdateFileStatusRequest;
+import com.skywaet.securefiletransfer.common.model.*;
 import com.skywaet.securefiletransfer.consumer.provider.CommonFileProviderFactory;
 import com.skywaet.securefiletransfer.consumer.provider.FileProvider;
 import io.grpc.Status;
@@ -46,14 +42,14 @@ public class FileTransferConsumer {
     public FileTransferConsumer(Gateway gateway,
                                 String networkName,
                                 String contractName,
-                                @Nonnull FileTransferClient fileTransferClient,
                                 @Nonnull CommonFileProviderFactory providerFactory,
                                 @Nonnull Consumer<FileProvider> contentConsumer) {
-        this.fileTransferClient = Objects.requireNonNull(fileTransferClient);
+
         this.providerFactory = Objects.requireNonNull(providerFactory);
         this.contentConsumer = Objects.requireNonNull(contentConsumer);
         this.network = gateway.getNetwork(networkName);
         this.contractName = contractName;
+        this.fileTransferClient = new FileTransferClient(gateway, networkName, contractName, mapper);
     }
 
     public void poll() {
